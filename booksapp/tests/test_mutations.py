@@ -1,5 +1,4 @@
 from .base import BaseTestCase
-from books.models import Book, Customer, BorrowedBooks
 from .fixtures import (create_customer_string,
                        create_book_string, borrow_books_string)
 
@@ -26,11 +25,13 @@ class MutationsTestcase(BaseTestCase):
         response = self.client.execute(
             create_book_string.format(
                 title='how to learn c++ in 24hrs',
-                total_number=25
+                total_number=25,
+                book_kind='regular'
             )
         )
-        self.assertEqual(response['data']['createBook']['success'],
-                         'book how to learn c++ in 24hrs was created successfully')
+        self.assertEqual(
+            response['data']['createBook']['success'],
+            'book how to learn c++ in 24hrs was created successfully')
         self.assertEqual(response['data']['createBook']
                          ['book']['totalNumber'], 25)
 
@@ -38,13 +39,15 @@ class MutationsTestcase(BaseTestCase):
         self.client.execute(
             create_book_string.format(
                 title='how to learn c++ in 24hrs',
-                total_number=1
+                total_number=1,
+                book_kind='novel'
             )
         )
         response = self.client.execute(
             create_book_string.format(
                 title='how to learn c++ in 24hrs',
-                total_number=25
+                total_number=25,
+                book_kind='novel'
             )
         )
         self.assertIn('already exists',
@@ -57,12 +60,13 @@ class MutationsTestcase(BaseTestCase):
         response = self.client.execute(
             borrow_books_string.format(
                 customer_id=customer_id, books_ids=books_ids,
-                days=3
+                days=[4, 5]
             )
         )
+
         self.assertEqual(
             len(response['data']['lendBooks']['borrowedBooks']), 2)
-        self.assertEqual(response['data']['lendBooks']['price'], 9.0)
+        self.assertEqual(response['data']['lendBooks']['price'], 27.0)
 
     def test_borrow_books_exceed_and_finish_all(self):
         customer_id = self.customer.id
@@ -72,11 +76,9 @@ class MutationsTestcase(BaseTestCase):
             response = self.client.execute(
                 borrow_books_string.format(
                     customer_id=customer_id, books_ids=books_ids,
-                    days=1
+                    days=[7, 8]
                 )
             )
-        self.assertEqual(
-            len(response['data']['lendBooks']['borrowedBooks']['books']), 0)
-        self.assertEqual(response['data']['lendBooks']['price'], 0.0)
+        self.assertEqual(response['data']['lendBooks']['price'], None)
         self.assertIn('Books with test book2 are over',
                       response['data']['lendBooks']['errors'])

@@ -1,9 +1,14 @@
 import graphene
 from graphene_django import DjangoObjectType
-from django.conf import settings
 
-from ..models import Customer, Book, BorrowedBooks
-from ..helpers import GetObjectList
+from ..models import Customer, Book, BorrowedBooks, RentedDuration
+from ..helpers import GetObjectList, map_book_ids_to_rented_days
+
+
+class bookKindEnum(graphene.Enum):
+    regular = 'Regular'
+    fiction = 'Fiction'
+    novel = 'Novel'
 
 
 class BookNode(DjangoObjectType):
@@ -52,13 +57,16 @@ class CreateBook(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
         total_number = graphene.Int(required=True)
+        book_kind = bookKindEnum()
 
     def mutate(self, info, **kwargs):
         title = kwargs.get('title')
         total_number = kwargs.get('total_number')
+        book_kind = kwargs.get('book_kind')
         errors = list()
         try:
-            book = Book.objects.create(title=title, total_number=total_number)
+            book = Book.objects.create(
+                title=title, total_number=total_number, book_kind=book_kind)
         except Exception as e:
             errors.append(str(e))
         if errors:
@@ -77,18 +85,22 @@ class BorrowBooks(graphene.Mutation):
     class Arguments:
         borrower_id = graphene.ID(required=True)
         books_ids = graphene.List(graphene.ID, required=True)
-        number_of_days = graphene.Int()
+        rented_days = graphene.List(graphene.Int, required=True)
 
     def mutate(self, info, **kwargs):
         errors = list()
         borrower_id = kwargs.get('borrower_id')
         books_ids = kwargs.get('books_ids')
-        number_of_days = kwargs.get('number_of_days')
+        rented_days = kwargs.get('rented_days')
+        number_of_days = dict(zip(books_ids, rented_days))
         borrower = Customer.objects.filter(id=borrower_id).first()
         if not borrower:
             errors.append('This customer is not in the system')
+            return BorrowBooks(errors=errors)
         books_to_borrow = GetObjectList.get_objects(
             Book, books_ids)
+        ids_to_days = map_book_ids_to_rented_days(
+            number_of_days, books_to_borrow)
         borrowed_books = BorrowedBooks()
         borrowed_books.save()
         if books_to_borrow:
@@ -100,11 +112,21 @@ class BorrowBooks(graphene.Mutation):
                     errors.append(f'Books with {book.title} are over')
             borrowed_books.borrower.add(borrower)
             if borrowed_books:
-                borrowed_books.number_of_days = number_of_days
+                for book_id, rented_days in ids_to_days.items():
+                    rentend_duration = RentedDuration()
+                    rentend_duration.book_id = book_id
+                    rentend_duration.days = rented_days
+                    rentend_duration.save()
+                    borrowed_books.rented_days.add(rentend_duration)
+        if errors:
+            borrowed_books.delete()
+            return BorrowBooks(errors=errors)
         borrowed_books.save()
         price = borrowed_books.price
         success = 'success'
-        return BorrowBooks(borrowed_books=borrowed_books, price=price, errors=errors, success=success)
+        return BorrowBooks(
+            borrowed_books=borrowed_books,
+            price=price, errors=errors, success=success)
 
 
 class Mutation(graphene.ObjectType):
