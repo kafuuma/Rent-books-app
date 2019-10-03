@@ -14,10 +14,10 @@ before_install:
   # - source venv/bin/activate
 
 install:
-  - pip install -r booksapp/requirements.txt
+  # - pip install -r booksapp/requirements.txt
 
 before_script:
   - psql -c "CREATE DATABASE books;" -U postgres
 
 script:
-  - python booksapp/manage.py test tests
+  - tox

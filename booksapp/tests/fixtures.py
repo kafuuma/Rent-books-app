@@ -15,12 +15,15 @@ create_customer_string = """
 
 create_book_string = """
     mutation CreateBook{{
-    createBook(title:"{title}", totalNumber:{total_number}){{
+    createBook(title:"{title}"
+    totalNumber:{total_number}
+    bookKind:{book_kind}){{
     book{{
       id
       title
       totalNumber
       totalRented
+      bookKind
     }}
     errors
     success
@@ -35,7 +38,7 @@ borrow_books_string = """
     lendBooks(
         borrowerId:{customer_id}
         booksIds:{books_ids}
-        numberOfDays:{days}){{
+        rentedDays:{days}){{
     borrowedBooks{{
       id
       books{{
@@ -50,4 +53,40 @@ borrow_books_string = """
     errors
   }}
 }}
+"""
+
+
+query_book_string = """
+        query getAllBooks{
+      books{
+        id
+        title
+        totalNumber
+        totalRented
+        borrowedbooksSet{
+          id
+          returnedOn
+          borrower{
+            id
+            username
+          }
+        }
+      }
+    }
+"""
+
+query_cutomer_string = """
+    query getAllcustomers{
+      customers{
+        id
+        username
+        borrowedbooksSet{
+          id
+          books{
+            id
+            title
+          }
+        }
+      }
+    }
 """

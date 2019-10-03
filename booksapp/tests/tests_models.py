@@ -2,7 +2,7 @@ from .base import BaseTestCase
 from books.models import Book, Customer, BorrowedBooks
 
 
-class CustomerTestcase(BaseTestCase):
+class ModelsTestcase(BaseTestCase):
 
     def test_customers(self):
         customer = Customer.objects.create(username='kafuuma')
@@ -15,5 +15,7 @@ class CustomerTestcase(BaseTestCase):
         self.assertEqual(0, book.total_rented)
 
     def test_borrowed_books(self):
-        borrowed_books = BorrowedBooks.objects.create(number_of_days=12)
-        self.assertEqual('BorrowedBooks(12)', str(borrowed_books))
+        borrowed_books = BorrowedBooks.objects.create()
+        book = Book.objects.create(title='rich dad poor dad')
+        borrowed_books.books.add(book)
+        self.assertEqual('BorrowedBooks(1)', str(borrowed_books))
