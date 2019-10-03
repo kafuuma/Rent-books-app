@@ -138,3 +138,6 @@ STATIC_URL = '/static/'
 GRAPHENE = {
     'SCHEMA': 'schema.schema',
 }
+
+
+PER_DAY_RENTAL_CHARGE = os.getenv('PER_DAY_RENTAL_CHARGE')
