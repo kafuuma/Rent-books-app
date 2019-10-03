@@ -89,7 +89,7 @@ DATABASES = {
         'TEST': {
             'CHARSET': None,
             'COLLATION': None,
-            'NAME': os.path.join(os.path.dirname(__file__), 'test.db'),
+            'NAME': 'test_db',
             'MIRROR': None
         }
     }
