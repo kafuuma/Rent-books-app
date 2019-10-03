@@ -32,3 +32,10 @@ class GetObjectList:
             raise GraphQLError(
                 f'There are no {model.__name__}(s) matching IDs: {ids}.')
         return queryset
+
+
+def map_book_ids_to_rented_days(number_of_days, books_to_borrow):
+    ids = [book.id for book in books_to_borrow]
+    ids_to_days = {key: value for key, value in number_of_days.items()
+                   if int(key) in ids}
+    return ids_to_days

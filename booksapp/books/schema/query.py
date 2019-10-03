@@ -1,5 +1,4 @@
 import graphene
-from graphene_django import DjangoObjectType
 from ..models import Customer, Book
 from .mutations import CustomerNode, BookNode
 
