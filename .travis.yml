@@ -1,0 +1,23 @@
+language: python
+
+python: 3.7
+
+services: postgresql
+
+env:
+  # - DEBUG=True
+  # - PER_DAY_RENTAL_CHARGE=1.5
+  # - DB_NAME=books
+
+before_install:
+  # - python3 -m venv venv
+  # - source venv/bin/activate
+
+install:
+  - pip install -r booksapp/requirements.txt
+
+before_script:
+  - psql -c "CREATE DATABASE books;" -U postgres
+
+script:
+  - python booksapp/manage.py test tests
