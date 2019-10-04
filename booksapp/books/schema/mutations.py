@@ -99,8 +99,7 @@ class BorrowBooks(graphene.Mutation):
         number_of_days = dict(zip(books_ids, rented_days))
         borrower = Customer.objects.filter(id=borrower_id).first()
         if not borrower:
-            errors.append('This customer is not in the system')
-            return BorrowBooks(errors=errors)
+            raise GraphQLError('This customer is not in the system')
         books_to_borrow = GetObjectList.get_objects(
             Book, books_ids)
         ids_to_days = map_book_ids_to_rented_days(

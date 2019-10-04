@@ -1,0 +1,29 @@
+version: '3'
+
+volumes:
+  database_data:
+
+services:
+  db:
+    container_name: database
+    env_file:
+      - ./prod.env
+    build:
+      context: ../
+      dockerfile: docker/db/Dockerfile
+    ports:
+      - '5432:5432'
+    volumes:
+      - database_data:/var/lib/postgresql/data
+
+  books:
+    container_name: books_app
+    env_file:
+      - ./prod.env
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - '80:8080'
