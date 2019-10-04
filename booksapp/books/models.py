@@ -3,6 +3,8 @@ from django.db import models
 
 from django.contrib.auth.models import User
 from django.conf import settings
+from .helpers import (calculate_price_for_noval_books,
+                      calculate_price_for_regular_books)
 
 
 CHARGE_REGULAR = float(settings.PER_DAY_RENTAL_CHARGE_REGULAR)
@@ -82,16 +84,18 @@ class BorrowedBooks(models.Model):
         return self.calculate_price(regular_books, novel_books, fiction_books)
 
     def calculate_price(self, regular_books, novel_books, fiction_books):
-        number_regular_books = regular_books.count()
-        number_novel_books = novel_books.count()
         number_fiction_books = fiction_books.count()
-        regular_book_days = sum(book.days for book in list(regular_books))
         fiction_book_days = sum(book.days for book in list(fiction_books))
-        noval_book_days = sum(book.days for book in list(novel_books))
+
+        total_regular_books_price = calculate_price_for_regular_books(
+            regular_books, CHARGE_REGULAR) if regular_books else 0.0
+
+        total_noval_books_price = calculate_price_for_noval_books(
+            novel_books, CHARGE_NOVEL) if regular_books else 0.0
 
         total_price = (
-            number_regular_books*regular_book_days*CHARGE_REGULAR +
-            number_fiction_books*fiction_book_days*CHARGE_FICTION +
-            number_novel_books * noval_book_days * CHARGE_NOVEL
+            total_regular_books_price + total_noval_books_price +
+            number_fiction_books*fiction_book_days*CHARGE_FICTION
+
         )
         return total_price

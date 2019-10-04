@@ -13,6 +13,11 @@ class ModelsTestcase(BaseTestCase):
         self.assertEqual('rich dad poor dad', str(book))
         self.assertEqual(1, book.total_number)
         self.assertEqual(0, book.total_rented)
+        book.add_books(2)
+        self.assertEqual(3, book.total_number)
+        book.remove_books(1)
+        self.assertEqual(2, book.total_number)
+        self.assertEqual(2, book.total_count)
 
     def test_borrowed_books(self):
         borrowed_books = BorrowedBooks.objects.create()
