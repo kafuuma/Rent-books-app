@@ -1,5 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
+from graphql import GraphQLError
 
 from ..models import Customer, Book, BorrowedBooks, RentedDuration
 from ..helpers import GetObjectList, map_book_ids_to_rented_days
@@ -92,6 +93,9 @@ class BorrowBooks(graphene.Mutation):
         borrower_id = kwargs.get('borrower_id')
         books_ids = kwargs.get('books_ids')
         rented_days = kwargs.get('rented_days')
+        if len(books_ids) != len(rented_days):
+            raise GraphQLError(
+                'The number of booksIds should match rentedDays')
         number_of_days = dict(zip(books_ids, rented_days))
         borrower = Customer.objects.filter(id=borrower_id).first()
         if not borrower:

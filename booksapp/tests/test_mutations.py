@@ -66,7 +66,7 @@ class MutationsTestcase(BaseTestCase):
 
         self.assertEqual(
             len(response['data']['lendBooks']['borrowedBooks']), 2)
-        self.assertEqual(response['data']['lendBooks']['price'], 27.0)
+        self.assertEqual(response['data']['lendBooks']['price'], 11.5)
 
     def test_borrow_books_exceed_and_finish_all(self):
         customer_id = self.customer.id
